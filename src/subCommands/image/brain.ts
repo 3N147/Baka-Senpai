@@ -41,8 +41,5 @@ export default new SubCommand("brain", async (command: ExtendedCommand) => {
 
     const files = [new MessageAttachment(canvas.toBuffer(), "Brain.png")]
 
-    const embeds = [
-        new MessageEmbed().setColor(color).setImage("attachment://Brain.png").setTitle("Here is the brain comparison."),
-    ]
-    return command.followUp({ embeds, files }).catch(console.error)
+    return command.followUp({ files }).catch(console.error)
 })

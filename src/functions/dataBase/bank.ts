@@ -1,4 +1,4 @@
-import { bankSize } from "../../config"
+import { economy } from "../../config"
 import { getUserData } from "./getData"
 
 //  Deposit
@@ -54,7 +54,7 @@ export const withdrawAll = async (userId: string) => {
 
 export const addBankSize = async (userId: string, amount?: number) => {
     const userData = await getUserData(userId)
-    amount = amount || bankSize
+    amount = amount || economy.bankSize
     userData.bankSize += amount
     return { userData, amount }
 }

@@ -7,12 +7,15 @@ export default new Command({
     description: "Hack someone to get nothing.",
     options: [],
     async execute(command) {
-        const data = await axios(
+        const URL =
             "https://v2.jokeapi.dev/joke/Miscellaneous,Dark,Pun,Spooky,Christmas?blacklistFlags=nsfw,religious,political,racist,sexist,explicit&type=single"
-        )
+
+        const data = await axios(URL)
             .then((x) => x.data)
             .catch(console.error)
-        if (!data) return
+
+        if (!data) return followUp(command, `Failed to get joke!`)
+
         followUp(command, data.joke)
     },
 })

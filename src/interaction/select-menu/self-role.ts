@@ -1,4 +1,4 @@
-import { MessageEmbed, MessageSelectMenu } from "discord.js"
+import { getEmbed } from "../../functions/discord/getEmbed"
 import { SelectMenu } from "../../structures/selectMenu"
 
 export default new SelectMenu({
@@ -7,28 +7,29 @@ export default new SelectMenu({
     async execute(select) {
         const { member, values } = select
 
-        //  Taking role list from the components
-        const selectComponent = select.message.components[0].components[0] as MessageSelectMenu
+        const added: string[] = []
+        const removed: string[] = []
 
-        //  Taking roles from selected option  to add
-        const roleList = selectComponent.options.map((option) => option.value)
-
-        //  Getting all available roles to add and remove to the member
-        const guildRoles = select.guild.roles.cache.filter((role) => roleList.includes(role.id))
-
-        //  Adding selected and removing unselected
-        guildRoles.forEach((role) =>
-            values.includes(role.id)
-                ? member.roles.add(role).catch(console.error)
-                : member.roles.remove(role).catch(console.error)
-        )
+        values.forEach((role) => {
+            if (member.roles.cache.has(role)) {
+                member.roles.remove(role).catch(console.error)
+                return removed.push(role)
+            }
+            member.roles.add(role).catch(console.error)
+            return added.push(role)
+        })
 
         //  This message will send as ephemeral after selecting the roles
-        const content = values.length
-            ? `Now you have ${values.map((x) => `<@&${x}>`)} roles.`
-            : `I removed all roles from you.`
+        let content = ""
 
-        const embeds = [new MessageEmbed().setDescription(content).setColor("GREEN")]
+        const map = (x: string) => `<@&${x}>`
+        const roleMap = (roles: string[]) => roles.map(map).join(", ")
+        const changeNumber = (arr: any[], name: string) => name + (arr.length > 1 ? "s" : "")
+
+        if (added.length) content += `Added ${changeNumber(added, "role")} ${roleMap(added)}.`
+        if (removed.length) content += `Removed ${changeNumber(removed, "role")} ${roleMap(removed)}`
+
+        const embeds = [getEmbed(select).setDescription(content).setColor("GREEN")]
         //  reply
         return select.reply({ embeds, ephemeral: true }).catch(console.error)
     },

@@ -11,5 +11,15 @@ export const getAuthor = (user: User): EmbedAuthorData => ({
     iconURL: user.displayAvatarURL({ dynamic: false }),
 })
 
-export const getEmbed = (client: Client, user: User) =>
-    new MessageEmbed().setColor(color).setAuthor(getAuthor(client.user)).setFooter(getFooter(user))
+interface EmbedGeneratorOptions {
+    user?: User
+    author?: User
+    client: Client
+}
+
+export const getEmbed = ({ user, author, client }: EmbedGeneratorOptions) =>
+    new MessageEmbed()
+        .setColor(color)
+        .setAuthor(getAuthor(client.user))
+        .setFooter(getFooter(user ?? author))
+        .setTimestamp()

@@ -8,9 +8,9 @@ export default new Command({
     description: "Check 100% accurate cool rate.",
     options: [
         {
-            type: 6,
+            type: "USER",
             name: "user",
-            description: "The cool user. (Hopefully)",
+            description: "Check how cool rate.",
             required: false,
         },
     ],
@@ -19,7 +19,7 @@ export default new Command({
 
         if (developers.includes(user.id)) return followUp(command, `${command.user} is the coolest person.`)
 
-        const rating = randomNumber(user, "coolrate")
+        const rating = randomNumber(user, "cool rate")
 
         const des = Math.floor(rating / 10)
 

@@ -6,16 +6,19 @@ import {
     MessageActionRow,
     SelectMenuInteraction,
 } from "discord.js"
-import { createButton } from "./createButton"
+import { createButton } from "./components"
 
 type option = {
     message?: Message
     interaction?: CommandInteraction | ButtonInteraction | SelectMenuInteraction
 }
-export const timeOut = async (timeOutType: "DENY" | "TIMEOUT" | "NOREPLY", { message, interaction }: option) => {
+export const timeOut = async (
+    timeOutType: "DENY" | "TIMEOUT" | "NOREPLY" | "DISABLE",
+    { message, interaction }: option,
+    components: MessageActionRow[] = [],
+) => {
     if (!message && !interaction) return
 
-    let components: MessageActionRow[]
     switch (timeOutType) {
         case "TIMEOUT":
             components = [
@@ -37,6 +40,9 @@ export const timeOut = async (timeOutType: "DENY" | "TIMEOUT" | "NOREPLY", { mes
                     createButton("User denied the confirmation.", "timeout", "SECONDARY", true),
                 ),
             ]
+            break
+        case "DISABLE":
+            components.forEach((x) => x.components.forEach((y) => (y.disabled = true)))
             break
     }
 

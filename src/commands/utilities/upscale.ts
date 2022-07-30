@@ -1,7 +1,10 @@
 import { Command } from "../../structures/Command"
 import deepai from "deepai"
-import { MessageAttachment } from "discord.js"
+import { Message, MessageAttachment } from "discord.js"
 import { followUp } from "../../functions/discord/message"
+import { createButton, createRow } from "../../functions/discord/components"
+import { emojis, waitTime } from "../../config"
+import { timeOut } from "../../functions/discord/timeout"
 
 export default new Command({
     name: "upscale",
@@ -33,11 +36,10 @@ export default new Command({
 
         const files = [new MessageAttachment(data.output_url, command.id + ".png")]
 
-        command
-            .followUp({
-                content: `Here is your up scaled image. [Download](${data.output_url})(For Limited Time.)`,
-                files,
-            })
-            .catch(console.error)
+        const components = [createRow(createButton("Download", null, "LINK", false, emojis.download, data.output_url))]
+
+        const message = (await command.followUp({ files, components }).catch(console.error)) as Message
+
+        setTimeout((_) => timeOut("DISABLE", { message }, components), waitTime)
     },
 })

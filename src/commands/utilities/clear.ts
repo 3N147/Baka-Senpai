@@ -1,10 +1,10 @@
 import { Command } from "../../structures/Command"
 import { Message, MessageActionRow, TextChannel } from "discord.js"
 import { getEmbed } from "../../functions/discord/getEmbed"
-import { createButton } from "../../functions/discord/createButton"
 import { waitTime } from "../../config"
 import { timeOut } from "../../functions/discord/timeout"
 import { followUp } from "../../functions/discord/message"
+import { createButton } from "../../functions/discord/components"
 
 export default new Command({
     name: "clear",
@@ -31,8 +31,8 @@ export default new Command({
         const from = messages.last()
         const to = messages.first()
 
-        const embeds = [
-            getEmbed(command.client, command.user)
+        let embeds = [
+            getEmbed(command)
                 .setDescription(
                     `Are you sure the you want to delete all of these messages?\n Total messages: ${messages.size}`,
                 )
@@ -54,8 +54,10 @@ export default new Command({
 
         if (button.customId === "no") return timeOut("DENY", { interaction: command })
 
-        await channel.bulkDelete(messages)
+        await channel.bulkDelete(messages).catch(console.error)
 
-        command.deleteReply().catch(console.error)
+        embeds = [getEmbed(command).setDescription("Messages has been deleted.")]
+
+        command.editReply({ embeds, components: [] }).catch(console.error)
     },
 })

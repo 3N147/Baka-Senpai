@@ -43,15 +43,15 @@ export default new Command({
             .catch(console.error)
 
         let title
-        if (type == "blush") title = `${target} is blushing. OwO`
-        if (type == "cringe") title = `${target} is being cringe.`
-        if (type == "cry") title = `${target} made ${user} cry.`
-        if (type == "kick") title = `${user} kicked ${target}`
-        if (type == "kiss") title = `Imagine kissing someone using me.`
-        if (type == "pat") title = `Ohh! Cute little ${target}`
-        if (type == "slap") title = `${user} slapped ${target}`
-        if (type == "bully") title = `Bullying is bad tho..`
-        if (type == "wave") title = `Hi ${target}.`
+        if (type === "blush") title = `${target} is blushing. OwO`
+        if (type === "cringe") title = `${target} is being cringe.`
+        if (type === "cry") title = `${target} made ${user} cry.`
+        if (type === "kick") title = `${user} kicked ${target}`
+        if (type === "kiss") title = `Imagine kissing someone using me.`
+        if (type === "pat") title = `Ohh! Cute little ${target}`
+        if (type === "slap") title = `${user} slapped ${target}`
+        if (type === "bully") title = `Bullying is bad tho..`
+        if (type === "wave") title = `Hi ${target}.`
         let embeds = [new MessageEmbed().setColor(color).setTitle(title).setImage(image.url)]
         command.followUp({ embeds }).catch(console.error)
     },

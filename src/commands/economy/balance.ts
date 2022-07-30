@@ -7,9 +7,9 @@ export default new Command({
     description: "Check balance.",
     options: [
         {
-            type: 6,
+            type: "USER",
             name: "user",
-            description: "For someone else.",
+            description: "Check balance of someone.",
             required: false,
         },
     ],

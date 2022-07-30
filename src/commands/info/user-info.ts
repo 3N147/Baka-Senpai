@@ -1,5 +1,7 @@
-import { GuildMember, MessageEmbed, PermissionResolvable, Permissions, PermissionString } from "discord.js"
+import { GuildMember, MessageEmbed, PermissionResolvable, Permissions, PermissionString, Role } from "discord.js"
 import { color } from "../../config"
+import { getDynamicTime } from "../../functions/discord/getDynamicTime"
+import { getEmbed } from "../../functions/discord/getEmbed"
 import { titleCase } from "../../functions/string/normalize"
 import { Command } from "../../structures/Command"
 import { ExtendedCommand } from "../../typings/Command"
@@ -19,7 +21,7 @@ export default new Command({
     ephemeral: true,
     async execute(command: ExtendedCommand) {
         const member = (command.options.getMember("user") as GuildMember) || command.member
-        const { user } = member
+        const { user, roles, permissions } = member
 
         const cross = "❌"
 
@@ -43,10 +45,7 @@ export default new Command({
             "ADMINISTRATOR",
         ]
 
-        let isMod: boolean
-        moderationPermissions.forEach((x: PermissionString) => {
-            if (member.permissions.has(x)) isMod = true
-        })
+        let isMod = moderationPermissions.some((x) => member.permissions.has(x))
 
         let Acknowledgment: string
         if (member.guild.ownerId === user.id) {
@@ -58,6 +57,12 @@ export default new Command({
         } else {
             Acknowledgment = "Member"
         }
+
+        const roleFilter = (role: Role) => role.name !== "@everyone"
+        const mapToString = (x) => `${x}`
+
+        const rolesString = roles.cache.filter(roleFilter).map(mapToString).join(", ") || cross
+        const memberPermissions = titleCase(moderationPermissions.filter((x) => permissions.has(x)).join(", ")) || cross
 
         let fields = [
             {
@@ -77,31 +82,22 @@ export default new Command({
             },
             {
                 name: "Created:",
-                value: `<t:${Math.floor(new Date(parseInt(user.id) / 4194304 + 1420070400000).getTime() / 1000)}:D>`,
+                value: getDynamicTime(user.createdAt, "SHORT"),
                 inline: true,
             },
             {
                 name: "Joined:",
-                value: `<t:${Math.floor(member.joinedTimestamp / 1000)}>`,
+                value: getDynamicTime(member.joinedAt, "SHORT"),
                 inline: true,
             },
 
             {
                 name: "Roles:",
-                value:
-                    member.roles.cache
-                        .filter((role) => role.name !== "@everyone" && !role.managed)
-                        .map((role) => `<@&${role.id}>`)
-                        .join(", ") || cross,
+                value: rolesString,
             },
             {
                 name: "Permissions:",
-                value: titleCase(
-                    member.permissions
-                        .toArray()
-                        .filter((perm) => moderationPermissions.includes(perm))
-                        .join(", ") || cross,
-                ),
+                value: memberPermissions,
             },
             {
                 name: "Badges:",
@@ -116,16 +112,10 @@ export default new Command({
         ]
 
         const embeds = [
-            new MessageEmbed()
-                .setColor(color)
-                .addFields(...fields)
-                .setThumbnail(member.displayAvatarURL())
-                .setTimestamp()
+            getEmbed(command)
                 .setTitle("User Info")
-                .setAuthor({
-                    iconURL: command.member.displayAvatarURL({ dynamic: false }),
-                    name: command.user.tag,
-                }),
+                .addFields(...fields)
+                .setThumbnail(member.displayAvatarURL({ size: 4096 })),
         ]
 
         command.followUp({ embeds }).catch(console.error)

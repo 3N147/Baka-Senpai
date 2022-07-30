@@ -29,7 +29,7 @@ export default new Command({
         const commandName = command.options.getSubcommand()
         const group = client.subCommands.get(`deposit`)
 
-        if (!group) return followUp(command, `Invalid Command.`)
+        if (!group) return followUp(command, `Error finding the command.`)
         const subcommand = group.get(commandName)
 
         if (!subcommand) return followUp(command, `Invalid Command.`)

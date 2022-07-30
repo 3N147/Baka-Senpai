@@ -1,7 +1,6 @@
 import { SubCommand } from "../../structures/SubCommand"
 import GIFEncoder from "gifencoder"
-import { MessageAttachment, MessageEmbed } from "discord.js"
-import { color } from "../../config"
+import { MessageAttachment } from "discord.js"
 import { createCanvas, loadImage } from "canvas"
 
 export default new SubCommand("trigger", async (command) => {
@@ -27,7 +26,7 @@ export default new SubCommand("trigger", async (command) => {
             Math.floor(Math.random() * BR) - BR,
             Math.floor(Math.random() * BR) - BR,
             256 + BR,
-            310 - 54 + BR
+            310 - 54 + BR,
         )
         ctx.fillStyle = "#FF000033"
         ctx.fillRect(0, 0, 256, 310)
@@ -36,7 +35,7 @@ export default new SubCommand("trigger", async (command) => {
             Math.floor(Math.random() * LR) - LR,
             310 - 54 + Math.floor(Math.random() * LR) - LR,
             256 + LR,
-            54 + LR
+            54 + LR,
         )
         GIF.addFrame(ctx)
         i++
@@ -44,7 +43,6 @@ export default new SubCommand("trigger", async (command) => {
     GIF.finish()
 
     const files = [new MessageAttachment(GIF.out.getData(), "triggered.gif")]
-    const embeds = [new MessageEmbed().setColor(color).setImage("attachment://triggered.gif")]
 
-    command.followUp({ embeds, files }).catch(console.error)
+    command.followUp({ files }).catch(console.error)
 })

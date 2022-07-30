@@ -9,7 +9,7 @@ export default new Command({
         {
             type: "STRING",
             name: "url",
-            description: "Link of your image.",
+            description: "Link of the image.",
             required: true,
         },
     ],

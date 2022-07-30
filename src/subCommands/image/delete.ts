@@ -25,7 +25,6 @@ export default new SubCommand("delete", async (command) => {
         .catch(console.error)
 
     const files = [new MessageAttachment(canvas.toBuffer(), "Delete.png")]
-    const embeds = [new MessageEmbed().setColor(color).setImage("attachment://Delete.png")]
 
-    command.followUp({ embeds, files }).catch(console.error)
+    command.followUp({ files }).catch(console.error)
 })

@@ -1,7 +1,10 @@
-import { Message, MessageActionRow, MessageButton, MessageButtonStyle, MessageEmbed } from "discord.js"
-import { coin, color } from "../../config"
+import { Message, MessageActionRow, MessageComponentInteraction } from "discord.js"
+import { coin, waitTime } from "../../config"
 import { addCoin } from "../../functions/dataBase/coin"
-import { interactionReply } from "../../functions/discord/message"
+import { collectorFilter } from "../../functions/discord/collectorFilter"
+import { createButton } from "../../functions/discord/components"
+import { getEmbed } from "../../functions/discord/getEmbed"
+import { timeOut } from "../../functions/discord/timeout"
 import { Command } from "../../structures/Command"
 
 export default new Command({
@@ -10,18 +13,16 @@ export default new Command({
     async execute(command) {
         const { user } = command
 
-        const button = (label: string, style: MessageButtonStyle, customId: string) =>
-            new MessageButton().setLabel(label).setStyle(style).setCustomId(customId)
-
-        let wood = button(`Wood`, `SUCCESS`, `wood`)
-        let bush = button(`Bush`, `SUCCESS`, `bush`)
-        let bed = button(`Bed`, `SUCCESS`, `bed`)
-        let jungle = button(`Jungle`, `SUCCESS`, `jungle`)
-        let water = button(`Water`, `SUCCESS`, `water`)
-        let internet = button(`Internet`, `SUCCESS`, `internet`)
-        let book = button(`Book`, `SUCCESS`, `book`)
-
-        let buttons = [wood, bush, bed, jungle, water, internet, book]
+        let buttons = [
+            createButton(`Wood`, `wood`),
+            createButton(`Bush`, `bush`),
+            createButton(`Bed`, `bed`),
+            createButton(`Jungle`, `jungle`),
+            createButton(`Water`, `water`),
+            createButton(`Internet`, `internet`),
+            createButton(`Book`, `book`),
+            createButton(`Wallet`, `wallet`),
+        ]
 
         function randomizeIndex(array: any[]) {
             if (array.length === 0) return array
@@ -37,45 +38,29 @@ export default new Command({
         buttons = randomizeIndex(buttons).slice(0, 3)
 
         let components = [new MessageActionRow().addComponents(buttons)]
-        let embeds = [new MessageEmbed().setColor(color).setDescription("Where do you want to search?")]
+        let embeds = [getEmbed(command).setDescription("Where do you want to search?")]
 
         const message = (await command.followUp({ embeds, components }).catch(console.error)) as Message
 
-        const collector = message.createMessageComponentCollector({ time: 60 * 1000 })
+        if (!message) return
 
-        collector.on("collect", async (interaction) => {
-            if (interaction.user.id !== user.id) {
-                collector.collected.delete(interaction.id)
-                return interactionReply(interaction, `I didn't asked you!`, true) as any
-            }
-            interaction.deferUpdate()
+        const filter = (interaction: MessageComponentInteraction) => collectorFilter(interaction, command.user)
 
-            const place = interaction.customId
+        const interaction = await message.awaitMessageComponent({ time: waitTime, filter })
 
-            if (Math.floor(Math.random() * 10) < 3) {
-                embeds = [new MessageEmbed().setColor(color).setDescription(`Got nothing by searching in ${place}.`)]
-                return message.edit({ embeds, components: [] }).catch(console.error)
-            }
+        if (!interaction) return timeOut("TIMEOUT", { message })
 
-            const { amount } = await addCoin(user.id, Math.round(Math.random() * 500))
+        const place = interaction.customId
 
-            embeds = [
-                new MessageEmbed().setColor(color).setDescription(`You found **${amount}** ${coin} in the ${place}.`),
-            ]
-
+        if (Math.floor(Math.random() * 10) < 3) {
+            embeds = [getEmbed(command).setDescription(`Got nothing by searching in ${place}.`)]
             return message.edit({ embeds, components: [] }).catch(console.error)
-        })
+        }
 
-        collector.on("end", async (collected) => {
-            if (collected.size !== 0) return
+        const { amount } = await addCoin(user.id, Math.round(Math.random() * 500))
 
-            buttons.forEach((button) => (button.disabled = true))
+        embeds = [getEmbed(command).setDescription(`You found **${amount}** ${coin} in the ${place}.`)]
 
-            components = [new MessageActionRow().addComponents(buttons)]
-
-            embeds = [new MessageEmbed().setColor(color).setDescription(`I waited enough.`)]
-
-            message.edit({ embeds, components }).catch(console.error)
-        })
+        return message.edit({ embeds, components: [] }).catch(console.error)
     },
 })

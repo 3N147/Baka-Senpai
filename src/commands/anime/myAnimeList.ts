@@ -7,13 +7,17 @@ import {
     Message,
     SelectMenuInteraction,
 } from "discord.js"
-import { color } from "../../config"
+import { color, waitTime } from "../../config"
+import { collectorFilter } from "../../functions/discord/collectorFilter"
+import { getDynamicTime } from "../../functions/discord/getDynamicTime"
+import { getEmbed } from "../../functions/discord/getEmbed"
 import { followUp, interactionReply } from "../../functions/discord/message"
+import { timeOut } from "../../functions/discord/timeout"
 import { spacing, titleCase } from "../../functions/string/normalize"
 import { Command } from "../../structures/Command"
 
 export default new Command({
-    name: "my-anime-list",
+    name: "myanimelist",
     description: "Search anime or manga from My Anime List.",
     options: [
         {
@@ -40,7 +44,6 @@ export default new Command({
             required: true,
         },
     ],
-    aliases: ["search"],
     async execute(command) {
         const type = command.options.getString("type")
         const name = command.options.getString("name")
@@ -48,22 +51,16 @@ export default new Command({
         let axiosData: any = await axios(`https://api.jikan.moe/v4/${type}?q=${name}&sfw`).catch(console.error)
         if (!axiosData?.data) followUp(command, `There is an error in the API.`)
         const data = axiosData.data.data
-        console.log(data[0])
 
-        let options = []
+        const options: MessageSelectOptionData[] = data.map((media: any, i: number) => {
+            const date = media.published?.from?.substr(0, 4) || media.aired?.from?.substr(0, 4)
 
-        await data.forEach((media: any, i: number) => {
-            let option: MessageSelectOptionData = { label: "", value: "" }
-
-            let date = media.published?.from?.substr(0, 4) || media.aired?.from?.substr(0, 4)
-
-            option.label = titleCase(`${media.title_english || media.title}`.substr(0, 90))
-            option.value = `${i}`
-            option.description = titleCase(
-                `${type}${date ? " - " + date : ""}${media.synopsis ? " - " : ""}${media.synopsis || ""}`.substr(0, 90)
+            const label = titleCase(`${media.title_english || media.title}`.substr(0, 90))
+            const value = `${i}`
+            const description = titleCase(
+                `${type}${date ? " - " + date : ""}${media.synopsis ? " - " : ""}${media.synopsis || ""}`.substr(0, 90),
             )
-            option.default = false
-            options.push(option)
+            return { label, value, description } as MessageSelectOptionData
         })
 
         if (!options.length) return followUp(command, "Please type the name correctly.")
@@ -78,62 +75,52 @@ export default new Command({
             new MessageActionRow().addComponents(
                 new MessageSelectMenu()
                     .setCustomId("anime_search")
-                    .setPlaceholder(`Select ${type == "anime" ? "an anime" : "a manga"} from here.`)
+                    .setPlaceholder(`Select ${type === "anime" ? "an anime" : "a manga"} from here.`)
                     .setOptions(options.slice(0, 20))
                     .setMaxValues(1)
-                    .setMinValues(1)
+                    .setMinValues(1),
             ),
         ]
 
         const message = (await command.followUp({ embeds, components }).catch(console.error)) as Message
 
-        const collector = message.createMessageComponentCollector({ idle: 30_000 })
+        const filter = (interaction) => collectorFilter(interaction, command.user)
+
+        const collector = message.createMessageComponentCollector({ idle: waitTime, filter })
 
         collector.on("collect", (selectMenu: SelectMenuInteraction) => {
-            if (selectMenu.user.id !== command.user.id) {
-                interactionReply(selectMenu, `I didn't asked you.`, true)
-                return collector.collected.delete(selectMenu.id) as any
-            }
             selectMenu.deferUpdate()
 
-            const media = data[parseInt(selectMenu.values[0])]
+            const index = parseInt(selectMenu.values[0])
+
+            const media = data[index]
 
             const cross = "❌"
             let started: string
             let ended: string
+
             if (media.published) {
-                started = `${
-                    media.published.from
-                        ? `<t:${Math.round(new Date(media.published.from).valueOf() / 1000)}:D>`
-                        : cross
-                }`
-                ended = `${
-                    media.published.to ? `<t:${Math.round(new Date(media.published.to).valueOf() / 1000)}:D>` : cross
-                }`
+                started = media.published.from ? getDynamicTime(media.published.from, "SHORT") : cross
+                ended = media.published.to ? getDynamicTime(media.published.to, "SHORT") : cross
             } else {
-                started = `${
-                    media.aired.from ? `<t:${Math.round(new Date(media.aired.from).valueOf() / 1000)}:D>` : cross
-                }`
-                ended = `${media.aired.to ? `<t:${Math.round(new Date(media.aired.to).valueOf() / 1000)}:D>` : cross}`
+                started = media.aired.from ? getDynamicTime(media.aired.from, "SHORT") : cross
+                ended = media.aired.to ? getDynamicTime(media.aired.to, "SHORT") : cross
             }
 
-            let demographics: string
-            if (media.demographics?.length) {
-                demographics = media.demographics.map((demographic) => demographic.name).join(", ")
-            }
+            const demographics = media.demographics?.length
+                ? media.demographics.map(({ name }) => name).join(", ")
+                : null
 
-            let genres: string
-            if (media.genres?.length) genres = media.genres.map((x) => x.name).join(", ")
+            const genres = media.genres?.length ? media.genres.map(({ name }) => name).join(", ") : null
+
+            const synopsis = media.synopsis ? spacing(media.synopsis) : "** **"
+            const background = media.background ? "**background : **" + spacing(media.background) : "** **"
 
             const embeds = [
-                new MessageEmbed().setColor(color).setImage(media.images?.webp?.image_url),
+                getEmbed(command).setImage(media.images?.webp?.image_url),
                 new MessageEmbed()
                     .setTitle(titleCase(media.title_english || media.title || cross))
-                    .setDescription(
-                        `${media.synopsis ? spacing(media.synopsis) : ""}\n${
-                            media.background ? "**background : **" + spacing(media.background) : ""
-                        }`
-                    )
+                    .setDescription(synopsis + "\n" + background)
                     .setColor(color)
                     .setFields(
                         {
@@ -181,17 +168,16 @@ export default new Command({
                             value: demographics || cross,
                             inline: true,
                         },
-                        { name: "Genres:", value: genres || cross }
+                        { name: "Genres:", value: genres || cross },
                     ),
             ]
 
             message.edit({ embeds }).catch(console.error)
         })
 
-        collector.on("end", (collection) => {
-            if (collection.size !== 0) return message.edit({ components: [] }).catch(console.error) as any
-            embeds = [new MessageEmbed().setColor(color).setTitle(`No reply from the user. What a wait of time. :p`)]
-            message.edit({ embeds, components: [] }).catch(console.error)
+        collector.on("end", (collection): any => {
+            if (collection.size !== 0) return timeOut("NOREPLY", { message })
+            timeOut("TIMEOUT", { message })
         })
     },
 })

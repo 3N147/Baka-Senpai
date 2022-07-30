@@ -1,6 +1,5 @@
 import mongoose from "mongoose"
 import { guildId } from "../config"
-import { startServer } from "../server"
 import { ExtendedClient } from "../structures/Client"
 import { Event } from "../structures/Event"
 
@@ -10,6 +9,4 @@ export default new Event("ready", async (client: ExtendedClient) => {
     const commands = Array.from(client.commands.values())
 
     await client.registerCommands({ commands, guildId })
-
-    startServer()
 })

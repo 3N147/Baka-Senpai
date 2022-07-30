@@ -20,7 +20,6 @@ export default new SubCommand("jail", async (command) => {
     await fitCover(ctx, canvas, jail)
 
     const files = [new MessageAttachment(canvas.toBuffer(), "jail.png")]
-    const embeds = [new MessageEmbed().setColor(color).setImage("attachment://jail.png")]
 
-    command.followUp({ embeds, files }).catch(console.error)
+    command.followUp({ files }).catch(console.error)
 })
