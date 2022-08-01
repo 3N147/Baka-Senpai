@@ -36,7 +36,7 @@ export default new Command({
 
         const files = [new MessageAttachment(data.output_url, command.id + ".png")]
 
-        const components = [createRow(createButton("Download", null, "LINK", false, emojis.download, data.output_url))]
+        const components = [createRow(createButton("Download", data.output_url, "LINK", false, emojis.download))]
 
         const message = (await command.followUp({ files, components }).catch(console.error)) as Message
 

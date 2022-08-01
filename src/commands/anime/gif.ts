@@ -12,17 +12,10 @@ export default new Command({
             type: 3,
             name: "action",
             description: "Type of the gif",
-            choices: [
-                { name: "blush", value: "blush" },
-                { name: "cringe", value: "cringe" },
-                { name: "cry", value: "cry" },
-                { name: "kick", value: "kick" },
-                { name: "kiss", value: "kiss" },
-                { name: "pat", value: "pat" },
-                { name: "slap", value: "slap" },
-                { name: "bully", value: "bully" },
-                { name: "wave", value: "wave" },
-            ],
+            choices: ["blush", "cringe", "cry", "kick", "kiss", "pat", "slap", "bully", "wave"].map((x) => ({
+                name: titleCase(x),
+                value: x,
+            })),
             required: true,
         },
         {
@@ -44,7 +37,7 @@ export default new Command({
 
         let title
         if (type === "blush") title = `${target} is blushing. OwO`
-        if (type === "cringe") title = `${target} is being cringe.`
+        if (type === "cringe") title = `${user} is dieing from cringe.`
         if (type === "cry") title = `${target} made ${user} cry.`
         if (type === "kick") title = `${user} kicked ${target}`
         if (type === "kiss") title = `Imagine kissing someone using me.`

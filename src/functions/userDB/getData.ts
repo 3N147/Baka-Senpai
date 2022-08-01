@@ -9,7 +9,8 @@ export const getUserData = async (userId: string) => {
         (await UserDataBase.create({ userId }))
 
     userData.quickSave = async function (client: ExtendedClient) {
-        this.save()
+        await this.save()
+
         client.userData.set(this.userId, this)
     }
 

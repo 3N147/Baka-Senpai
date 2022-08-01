@@ -145,7 +145,7 @@ export const colorSelector = (str: string): string => {
 
     const reg = /^#([0-9a-f]{3}){1,2}$/i // color hex (#123 || #112233)
 
-    if (!str.startsWith("#") && typeof colors[str.toLowerCase()] != "undefined") return colors[str.toLowerCase()]
+    if (!str.startsWith("#") && typeof colors[str.toLowerCase()] != undefined) return colors[str.toLowerCase()]
 
     if (!str.startsWith("#") && reg.test("#" + str)) return "#" + str
 

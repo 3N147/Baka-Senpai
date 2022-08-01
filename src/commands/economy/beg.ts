@@ -1,5 +1,5 @@
 import { coin } from "../../config"
-import { addCoin } from "../../functions/dataBase/coin"
+import { addCoin } from "../../functions/userDB/coin"
 import { followUp } from "../../functions/discord/message"
 import { Command } from "../../structures/Command"
 
@@ -9,11 +9,11 @@ export default new Command({
     async execute(command) {
         const { id } = command.user
 
-        if (Math.floor(Math.random() * 10) < 3) return followUp(command, `Got nothing from begging. Poor beggar.`)
+        if (Math.floor(Math.random() * 10) < 3) return followUp(command, `You got nothing from begging. Poor beggar!`)
 
-        const randomCoin = Math.floor(Math.random() * 500)
+        const randomCoin = Math.round(Math.random() * 500)
 
-        await addCoin(id, randomCoin)
+        await addCoin(id, randomCoin, command.client)
 
         followUp(command, `Your earned **${randomCoin}** ${coin} from begging.`)
     },

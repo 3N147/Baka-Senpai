@@ -1,5 +1,4 @@
-import { MessageEmbed } from "discord.js"
-import { color } from "../../config"
+import { EmbedFieldData } from "discord.js"
 import { getEmbed } from "../../functions/discord/getEmbed"
 import { Command } from "../../structures/Command"
 
@@ -7,14 +6,19 @@ export default new Command({
     name: "help",
     description: "Get a list of all commands.",
     async execute(command) {
-        const embeds = [
-            getEmbed(command).setDescription(
-                command.client.commands
-                    .filter((x) => !x.devOnly)
-                    .map(({ name }) => `\`${name}\``)
-                    .join(", "),
-            ),
-        ]
+        const commands = command.client.commands.filter((cmd) => !cmd.devOnly)
+
+        const categories = Array.from(new Set(commands.map((x) => x.category)))
+
+        const fields: EmbedFieldData[] = categories.map((cate) => {
+            const commandList = commands
+                .filter((cmd) => cmd.category === cate && !cmd.aliases?.includes(cmd.name))
+                .map(({ name }) => `\`${name}\``)
+
+            return { name: cate, value: commandList.join(" ") || `** **` }
+        })
+
+        const embeds = [getEmbed(command).setTitle("Here is the list of the commands.").setFields(fields)]
         command.followUp({ embeds }).catch(console.error)
     },
 })

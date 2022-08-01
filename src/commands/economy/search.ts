@@ -1,6 +1,6 @@
 import { Message, MessageActionRow, MessageComponentInteraction } from "discord.js"
 import { coin, waitTime } from "../../config"
-import { addCoin } from "../../functions/dataBase/coin"
+import { addCoin } from "../../functions/userDB/coin"
 import { collectorFilter } from "../../functions/discord/collectorFilter"
 import { createButton } from "../../functions/discord/components"
 import { getEmbed } from "../../functions/discord/getEmbed"
@@ -57,7 +57,7 @@ export default new Command({
             return message.edit({ embeds, components: [] }).catch(console.error)
         }
 
-        const { amount } = await addCoin(user.id, Math.round(Math.random() * 500))
+        const { amount } = await addCoin(user.id, Math.round(Math.random() * 500), command.client)
 
         embeds = [getEmbed(command).setDescription(`You found **${amount}** ${coin} in the ${place}.`)]
 

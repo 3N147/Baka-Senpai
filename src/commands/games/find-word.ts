@@ -2,6 +2,7 @@ import { Collection, Message, MessageEmbed } from "discord.js"
 import { color } from "../../config"
 import { wordList } from "../../data/wordList"
 import { messageReply } from "../../functions/discord/message"
+import { randomizeIndex, randomString } from "../../functions/random/random"
 import { Command } from "../../structures/Command"
 
 export default new Command({
@@ -9,17 +10,8 @@ export default new Command({
     description: "Find the stupid word from the following line.",
     async execute(command) {
         const time = (Math.floor(Math.random() * 3) + 3) * (9 * 1000)
-        let words = (await getWords(time / (9 * 1000))) as string[]
-        const array = []
-
-        let length = 20
-        if (words.join("").length > length) length = words.join("").length - 1
-
-        for (let i = 0; i < length; i++) {
-            array.push(
-                "abcdefghijklmnopqrstuvwxyz".charAt(Math.floor(Math.random() * "abcdefghijklmnopqrstuvwxyz".length))
-            )
-        }
+        let words: string[] = randomizeIndex(wordList).slice(0, time / (9 * 1000))
+        const array = randomString(30).split("")
 
         words.forEach((e) => array.splice(Math.floor(Math.random() * array.length), 0, ` \`${e}\` `))
 
@@ -34,7 +26,7 @@ export default new Command({
                 .setTitle("Find the word for this line.")
                 .addFields(
                     { name: "Time:", value: `${time / 1000}s` },
-                    { name: "Answered:", value: answered.join(", ") || "** **" }
+                    { name: "Answered:", value: answered.join(", ") || "** **" },
                 ),
         ]
 
@@ -43,7 +35,9 @@ export default new Command({
 
         const collector = message.channel.createMessageCollector({ time, filter })
 
-        collector.on("collect", async (msg: Message) => {
+        let end = false
+
+        collector.on("collect", async (msg: Message): Promise<any> => {
             msg.content = msg.content.toLowerCase()
 
             if (!words.includes(msg.content)) {
@@ -58,7 +52,7 @@ export default new Command({
                 messageReply(msg, `Correct answer. No words remand.`, false, 3)
 
                 let players = Array.from(new Set(collector.collected.map((message) => message.author.username))).map(
-                    (x) => `${x} : ${collector.collected.filter((y) => y.author.username === x).size}`
+                    (x) => `${x} : ${collector.collected.filter((y) => y.author.username === x).size}`,
                 )
 
                 embeds = [
@@ -68,10 +62,10 @@ export default new Command({
                         .setTitle("All words are found.")
                         .addFields(
                             { name: "Answered:", value: answered.join(", ") || "** **" },
-                            { name: "Players:", value: players.join(", ") }
+                            { name: "Players:", value: players.join(", ") },
                         ),
                 ]
-                collector.collected.set("end", message)
+                end = true
 
                 return message.edit({ embeds }).catch(console.error) as any
             }
@@ -85,14 +79,14 @@ export default new Command({
                     .setTitle("Find the word for this line.")
                     .addFields(
                         { name: "Time:", value: `${time / 1000}s` },
-                        { name: "Answered:", value: answered.join(", ") || "** **" }
+                        { name: "Answered:", value: answered.join(", ") || "** **" },
                     ),
             ]
-            return message.edit({ embeds }).catch(console.error) as any
+            return message.edit({ embeds }).catch(console.error)
         })
 
         collector.on("end", async (collection: Collection<string, any>) => {
-            if (collection.get("end")) return
+            if (end) return
 
             if (collection.size === 0) {
                 embeds = [
@@ -102,14 +96,14 @@ export default new Command({
                         .setTitle("Game timeout.")
                         .addFields(
                             { name: "Time:", value: `${time / 1000}s` },
-                            { name: "Words:", value: words.join(", ") }
+                            { name: "Words:", value: words.join(", ") },
                         ),
                 ]
                 return message.edit({ embeds }).catch(console.error) as any
             }
 
             let players = Array.from(new Set(collector.collected.map((message) => message.author.username))).map(
-                (x) => `${x} : ${collector.collected.filter((y) => y.author.username === x).size}`
+                (x) => `${x} : ${collector.collected.filter((y) => y.author.username === x).size}`,
             )
 
             embeds = [
@@ -121,26 +115,10 @@ export default new Command({
                         { name: "Time:", value: `${time / 1000}s` },
                         { name: "Words:", value: words.join(", ") },
                         { name: "Answered:", value: answered.join(", ") || "** **" },
-                        { name: "Players:", value: players.join(", ") }
+                        { name: "Players:", value: players.join(", ") },
                     ),
             ]
             return message.edit({ embeds }).catch(console.error) as any
         })
     },
 })
-
-async function getWords(amount: number) {
-    function randomizeIndex(array: string[]) {
-        if (array.length === 0) return array
-        for (let index = 0; index < array.length; index++) {
-            let i = Math.floor(Math.random() * array.length)
-            let randomItem = array[i]
-            array[i] = array[index]
-            array[index] = randomItem
-        }
-        return array
-    }
-
-    const list = randomizeIndex(wordList)
-    return list.slice(0, amount)
-}

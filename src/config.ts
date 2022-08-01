@@ -3,6 +3,7 @@ export const color = "#2f3136"
 export const guildId = "970403357904736276"
 export const developers = ["759472423807746059"]
 export const economy = {
+    tax: 0.1,
     bankSize: 50000,
     daily: 5000,
 }

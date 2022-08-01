@@ -1,7 +1,7 @@
 import { Client, Collection } from "discord.js"
 import { CommandFunction, CommandType } from "../typings/Command"
 import { RegisterCommandsOptions } from "../typings/client"
-import { SelectType } from "../typings/Components"
+import { ButtonType, SelectType } from "../typings/Components"
 import { readdirSync } from "fs"
 import { error, log } from "console"
 import deepai from "deepai"
@@ -11,6 +11,7 @@ export class ExtendedClient extends Client {
     commands: Collection<string, CommandType> = new Collection()
     userData: Collection<string, UserDataType> = new Collection()
     selectMenus: Collection<string, SelectType> = new Collection()
+    buttons: Collection<string, ButtonType> = new Collection()
     coolDown: Collection<string, Collection<string, number>> = new Collection()
     subCommands: Collection<string, Collection<string, CommandFunction>> = new Collection()
 

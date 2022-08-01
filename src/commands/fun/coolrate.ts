@@ -1,7 +1,7 @@
 import { followUp } from "../../functions/discord/message"
 import { Command } from "../../structures/Command"
-import { randomNumber } from "../../functions/string/randomNumber"
 import { developers } from "../../config"
+import { randomNumber } from "../../functions/random/random"
 
 export default new Command({
     name: "cool-rate",
@@ -10,7 +10,7 @@ export default new Command({
         {
             type: "USER",
             name: "user",
-            description: "Check how cool rate.",
+            description: "Check cool rate.",
             required: false,
         },
     ],

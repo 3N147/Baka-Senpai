@@ -1,5 +1,5 @@
 import { coin } from "../../config"
-import { getUserData } from "../../functions/dataBase/getData"
+import { getUserData } from "../../functions/userDB/getData"
 import { followUp } from "../../functions/discord/message"
 import { Command } from "../../structures/Command"
 export default new Command({
