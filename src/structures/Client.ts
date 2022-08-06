@@ -6,6 +6,7 @@ import { readdirSync } from "fs"
 import { error, log } from "console"
 import deepai from "deepai"
 import { UserDataType } from "../schema/user"
+import { Image } from "canvas"
 
 export class ExtendedClient extends Client {
     commands: Collection<string, CommandType> = new Collection()
@@ -14,6 +15,7 @@ export class ExtendedClient extends Client {
     buttons: Collection<string, ButtonType> = new Collection()
     coolDown: Collection<string, Collection<string, number>> = new Collection()
     subCommands: Collection<string, Collection<string, CommandFunction>> = new Collection()
+    images: Collection<string, Image> = new Collection()
 
     constructor() {
         super({ intents: 32767 })

@@ -1,5 +1,4 @@
-import { SubCommand } from "../../structures/SubCommand"
-import Canvas from "canvas"
+import { createCanvas, Image, loadImage } from "canvas"
 import { MessageAttachment } from "discord.js"
 import { fitCover } from "../../functions/canvas/fitCover"
 import { Command } from "../../structures/Command"
@@ -17,18 +16,18 @@ export default new Command({
     async execute(command) {
         const user = command.options.getUser("user")
 
-        const canvas = Canvas.createCanvas(500, 500)
+        const canvas = createCanvas(500, 500)
         const ctx = canvas.getContext("2d")
 
         const avatarURL = user.displayAvatarURL({ dynamic: false, format: "png", size: 512 })
 
-        await Canvas.loadImage(avatarURL)
+        await loadImage(avatarURL)
             .then((avatar) => ctx.drawImage(avatar, 0, 0, 500, 500))
             .catch(console.error)
 
-        const jail = await Canvas.loadImage("./assets/images/jail-bars.png")
+        const jail = command.client.images.get("jail-bars.png") ?? (await loadImage("./assets/images/jail-bars.png"))
 
-        await fitCover(ctx, canvas, jail)
+        if (jail) await fitCover(ctx, canvas, jail)
 
         const files = [new MessageAttachment(canvas.toBuffer(), "jail.png")]
 

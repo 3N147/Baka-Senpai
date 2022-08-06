@@ -26,7 +26,7 @@ export default new Command({
             .then((avatar) => ctx.drawImage(avatar, 0, 0, 500, 500))
             .catch(console.error)
 
-        let rainbowImage = await loadImage("./assets/images/rainbow.png")
+        let rainbowImage = command.client.images.get("rainbow.png") ?? (await loadImage("./assets/images/rainbow.png"))
 
         ctx.globalAlpha = 0.4
 

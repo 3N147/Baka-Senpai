@@ -1,4 +1,4 @@
-import { MessageActionRow } from "discord.js"
+import { MessageActionRow, MessageButton } from "discord.js"
 
 export const toggleComponents = (
     components: MessageActionRow[],
@@ -15,3 +15,15 @@ export const toggleComponents = (
 
     return components
 }
+
+export const toggleAnswerComponents = (components: MessageActionRow[], userAnswer: string, correctAnswer: string) =>
+    components.map((row) => {
+        row.components.map((component: MessageButton) => {
+            component.setStyle("SECONDARY")
+            component.disabled = true
+            if (component.customId === userAnswer) component.setStyle("DANGER")
+            if (component.customId === correctAnswer) component.setStyle("SUCCESS")
+            return component
+        })
+        return row
+    })

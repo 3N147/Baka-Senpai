@@ -1,7 +1,12 @@
-import { coin } from "../../config"
+import { coin, waitTime } from "../../config"
 import { getUserData } from "../../functions/userDB/getData"
-import { followUp } from "../../functions/discord/message"
+import { followUp, interactionReply } from "../../functions/discord/message"
 import { Command } from "../../structures/Command"
+import { getEmbed } from "../../functions/discord/getEmbed"
+import { writeCoin } from "../../functions/string/writeCoins"
+import { createButton, createRow } from "../../functions/discord/components"
+import { Message } from "discord.js"
+import { deposit, withdraw } from "../../functions/userDB/bank"
 export default new Command({
     name: "balance",
     description: "Check balance.",
@@ -18,6 +23,42 @@ export default new Command({
 
         const userData = await getUserData(userId)
 
-        followUp(command, `Coin: **${userData.coin}** ${coin} Bank: **${userData.bank}** ${coin}`)
+        const { coin, bank } = userData
+
+        const description = [
+            `Coin: ${writeCoin(coin)}`,
+            `Bank: ${writeCoin(bank)}`,
+            `Net: ${writeCoin(coin + bank)}`,
+        ].join("\n")
+
+        const embeds = [getEmbed(command).setDescription(description)]
+
+        const components = [
+            createRow(createButton("Deposit All", "dep", "SUCCESS"), createButton("Withdraw All", "with", "SUCCESS")),
+        ]
+
+        const message = (await command.followUp({ components, embeds }).catch(console.error)) as Message
+
+        if (!message) return
+
+        const button = await message.awaitMessageComponent({ time: waitTime }).catch(() => null)
+
+        if (!button) return
+
+        if (button.customId === "with") {
+            const { amount } = await withdraw(command.user.id, null, command.client, userData)
+            message.edit({ components: [] }).catch(console.error)
+            return interactionReply(
+                button,
+                `All coins have been withdrawn from the bank. Amount: ${writeCoin(amount)}`,
+                true,
+            )
+        }
+
+        const { amount } = await deposit(command.user.id, null, command.client, userData)
+
+        message.edit({ components: [] }).catch(console.error)
+
+        return interactionReply(button, `All coins have been deposited to the bank. Amount: ${writeCoin(amount)}`, true)
     },
 })

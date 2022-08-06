@@ -20,7 +20,8 @@ export default new Command({
 
         const avatar = user.displayAvatarURL({ dynamic: false, format: "png" })
 
-        const base = await loadImage("./assets/images/triggered.png")
+        const base = command.client.images.get("triggered.png") ?? (await loadImage("./assets/images/triggered.png"))
+
         const img = await loadImage(avatar)
         const GIF = new GIFEncoder(256, 310)
         GIF.start()

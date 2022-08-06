@@ -1,4 +1,4 @@
-import { createCanvas, loadImage, registerFont } from "canvas"
+import { createCanvas, Image, loadImage, registerFont } from "canvas"
 import { MessageAttachment, MessageEmbed } from "discord.js"
 import { followUp } from "../../functions/discord/message"
 import { getLines } from "../../functions/canvas/getLines"
@@ -42,18 +42,14 @@ export default new Command({
         let big = getString("big")
         let biggest = getString("biggest")
 
-        const canvas = createCanvas(542, 767)
+        const image = command.client.images.get("brain.jpg") ?? (await loadImage("assets/images/brain.jpg"))
+
+        if (!image) return followUp(command, `Error loading the image. Please try again.`)
+
+        const canvas = createCanvas(image.width, image.height)
         const ctx = canvas.getContext("2d")
 
-        try {
-            await loadImage("assets/images/brain.jpg").then((img) =>
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height),
-            )
-        } catch (error) {
-            followUp(command, "There was error loading the image.")
-            console.error(error)
-        }
-        registerFont("assets/fonts/Rubik.ttf", { family: "Rubik" })
+        ctx.drawImage(image, 0, 0, image.width, image.height)
 
         ctx.fillStyle = "black"
         ctx.font = "24px 'Rubik'"

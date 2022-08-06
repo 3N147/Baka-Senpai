@@ -15,7 +15,7 @@ export const createButton = (
     customId: string,
     style: MessageButtonStyle = "SECONDARY",
     disabled?: boolean,
-    emoji?: string | null | false,
+    emoji?: string,
 ) => {
     const button = new MessageButton().setLabel(label).setStyle(style)
     style === "LINK" ? button.setURL(customId) : button.setCustomId(customId)
