@@ -1,5 +1,6 @@
 import { client } from ".."
 import { interactionReply } from "../functions/discord/message"
+import { logError } from "../functions/log/logger"
 import { titleCase } from "../functions/string/normalize"
 import { Event } from "../structures/Event"
 import { ExtendedButton } from "../typings/Components"
@@ -21,6 +22,6 @@ export default new Event("interactionCreate", async (interaction: ExtendedButton
     try {
         button.execute(interaction)
     } catch (error) {
-        console.error(error)
+        logError(error)
     }
 })

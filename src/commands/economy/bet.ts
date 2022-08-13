@@ -2,6 +2,8 @@ import { coin, economy } from "../../config"
 import { getUserData } from "../../functions/userDB/getData"
 import { followUp } from "../../functions/discord/message"
 import { Command } from "../../structures/Command"
+import { writeCoin } from "../../functions/string/writeCoins"
+import { addCoin } from "../../functions/userDB/coin"
 
 export default new Command({
     name: "bet",
@@ -19,22 +21,20 @@ export default new Command({
 
         const userData = await getUserData(command.user.id)
 
-        if (userData.coin < amount) return followUp(command, `You don't have enough money to bet!`)
-        if (1000 > amount) return followUp(command, `You must bet minimum 1000 ${coin}!`)
+        if (userData.coin < amount) return command.followUp(`You don't have enough money to bet!`)
+        if (1e3 > amount || amount > 1e6)
+            return command.followUp(`The bet amount must be between ${writeCoin(1e3)} - ${writeCoin(1e6)}!`)
 
         const win = Math.round(Math.random())
 
         if (!win) {
-            userData.coin -= amount
-            userData.quickSave(command.client)
+            addCoin(userData, -amount)
             return followUp(command, `You have lost ${amount} ${coin} in the bet.`, null, "RED")
         }
 
-        const winAmount = amount - amount * economy.tax
-        userData.coin += winAmount
+        const winAmount = Math.round(amount - amount * economy.tax)
+        addCoin(userData, winAmount)
 
-        userData.quickSave(command.client)
-
-        followUp(command, `You have win **${winAmount + amount}** ${coin} from the bet. 🎉`)
+        command.followUp(`You have win ${writeCoin(winAmount + amount)} from the bet. 🎉`)
     },
 })

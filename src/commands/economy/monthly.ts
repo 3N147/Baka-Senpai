@@ -6,26 +6,26 @@ import { Command } from "../../structures/Command"
 import { addCoin } from "../../functions/userDB/coin"
 
 export default new Command({
-    name: "daily",
-    description: "Get fixed amount of coin every day.",
+    name: "monthly",
+    description: "Get fixed amount of coin every month.",
     botPermissions: ["EMBED_LINKS", "SEND_MESSAGES"],
     async execute(command) {
         const userData = await getUserData(command.user.id)
 
         const currentTime = new Date().valueOf()
-        const { daily } = userData
+        const { monthly } = userData
 
-        const DAY = 1000 * 60 * 60 * 24 // a day in ms
-        const nextDay = daily.time.valueOf() + DAY
+        const MONTH = 1000 * 60 * 60 * 24 * 30 // a month in ms
+        const nextDay = monthly.time.valueOf() + MONTH
 
-        if (currentTime - daily.time.valueOf() < DAY) {
+        if (currentTime - monthly.time.valueOf() < MONTH) {
             const time = getDynamicTime(nextDay, "RELATIVE")
             return command.followUp(`You can't use this command now.\nYou'll be able to use this command ${time}.`)
         }
 
-        userData.daily.time = new Date()
-        addCoin(userData, daily.amount)
+        userData.monthly.time = new Date()
+        addCoin(userData, monthly.amount)
 
-        followUp(command, `You got **${daily.amount}** ${coin} from daily.`)
+        followUp(command, `You got **${monthly.amount}** ${coin} from monthly.`)
     },
 })

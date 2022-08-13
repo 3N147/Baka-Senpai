@@ -10,6 +10,7 @@ export default new Command({
     name: "meme",
     description: "Get a funny meme.",
     options: [],
+    botPermissions: ["EMBED_LINKS", "SEND_MESSAGES"],
     async execute(command) {
         const subRedditList = ["Animemes", "GoodAnimemes", "animememes", "AnimeMeme"]
 
@@ -44,6 +45,6 @@ export default new Command({
                 .setFooter({ text: `👍 : ${data.ups} | r/${data.subreddit}` }),
         ]
 
-        command.followUp({ embeds }).catch(console.error)
+        command.followUp({ embeds })
     },
 })

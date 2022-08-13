@@ -1,13 +1,12 @@
 import mongoose from "mongoose"
 import { economy } from "../config"
-import { ExtendedClient } from "../structures/Client"
 const STRING = { type: String, required: true }
 const NUMBER = { type: Number, required: true, default: 0 }
 const DATE = { type: Date, require: true, default: new Date() }
 const setNumber = (num: number) => ({ type: Number, required: true, default: num })
 
 export interface UserDataType extends mongoose.Document {
-    quickSave: (client: ExtendedClient) => any
+    quickSave: () => void
     userId: string
     level: number
     xp: number
@@ -15,6 +14,10 @@ export interface UserDataType extends mongoose.Document {
     bank: number
     bankSize: number
     daily: {
+        amount: number
+        time: Date
+    }
+    monthly: {
         amount: number
         time: Date
     }
@@ -31,6 +34,10 @@ const schema = new mongoose.Schema({
         amount: setNumber(economy.daily),
         time: DATE,
     },
+    monthly: {
+        amount: setNumber(economy.monthly),
+        time: DATE,
+    },
 })
 
-export const UserDataBase = mongoose.model("UserDataBase", schema, "UserData")
+export const UserDataBase = mongoose.model("UserData", schema, "User")

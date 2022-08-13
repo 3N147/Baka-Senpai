@@ -8,6 +8,7 @@ import { Command } from "../../structures/Command"
 export default new Command({
     name: "find-the-words",
     description: "Find the stupid word from the following line.",
+    botPermissions: ["EMBED_LINKS", "SEND_MESSAGES"],
     async execute(command) {
         const time = (Math.floor(Math.random() * 3) + 3) * (9 * 1000)
         let words: string[] = randomizeIndex(wordList).slice(0, time / (9 * 1000))
@@ -30,7 +31,7 @@ export default new Command({
                 ),
         ]
 
-        const message = (await command.followUp({ embeds }).catch(console.error)) as Message
+        const message = (await command.followUp({ embeds })) as Message
         const filter = (message: Message) => !message.author.bot
 
         const collector = message.channel.createMessageCollector({ time, filter })
@@ -67,7 +68,7 @@ export default new Command({
                 ]
                 end = true
 
-                return message.edit({ embeds }).catch(console.error) as any
+                return message.edit({ embeds })
             }
 
             messageReply(msg, `Correct answer. There is ${words.length} more words`, false, 3)
@@ -82,10 +83,10 @@ export default new Command({
                         { name: "Answered:", value: answered.join(", ") || "** **" },
                     ),
             ]
-            return message.edit({ embeds }).catch(console.error)
+            return message.edit({ embeds })
         })
 
-        collector.on("end", async (collection: Collection<string, any>) => {
+        collector.on("end", async (collection): Promise<any> => {
             if (end) return
 
             if (collection.size === 0) {
@@ -99,7 +100,7 @@ export default new Command({
                             { name: "Words:", value: words.join(", ") },
                         ),
                 ]
-                return message.edit({ embeds }).catch(console.error) as any
+                return message.edit({ embeds })
             }
 
             let players = Array.from(new Set(collector.collected.map((message) => message.author.username))).map(
@@ -118,7 +119,7 @@ export default new Command({
                         { name: "Players:", value: players.join(", ") },
                     ),
             ]
-            return message.edit({ embeds }).catch(console.error) as any
+            return message.edit({ embeds })
         })
     },
 })

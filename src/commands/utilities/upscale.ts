@@ -25,6 +25,7 @@ export default new Command({
         },
     ],
     aliases: ["waifu2x"],
+    botPermissions: ["EMBED_LINKS", "SEND_MESSAGES", "ATTACH_FILES"],
     async execute(command) {
         const url = command.options.getAttachment("upload")?.url ?? command.options.getString("url")
 

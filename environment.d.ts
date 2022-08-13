@@ -4,6 +4,9 @@ declare global {
             TOKEN: string
             MONGODB: string
             deepai: string
+            GUILDS: string
+            LOGIN: string
+            ERROR: string
         }
     }
 }

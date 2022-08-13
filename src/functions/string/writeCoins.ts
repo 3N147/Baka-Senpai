@@ -1,4 +1,4 @@
 import { coin } from "../../config"
-import { numberFormatter } from "./numberFormatter"
+import { numberWithComma } from "./numberFormatter"
 
-export const writeCoin = (coins: number) => `**${numberFormatter(coins)}** ${coin}`
+export const writeCoin = (coins: number) => `**${numberWithComma(coins)} ${coin}**`

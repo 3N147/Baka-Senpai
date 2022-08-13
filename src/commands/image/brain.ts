@@ -35,6 +35,7 @@ export default new Command({
         },
     ],
 
+    botPermissions: ["EMBED_LINKS", "SEND_MESSAGES", "ATTACH_FILES"],
     async execute(command: ExtendedCommand) {
         const { getString } = command.options
         let smallest = getString("smallest")
@@ -68,6 +69,6 @@ export default new Command({
 
         const files = [new MessageAttachment(canvas.toBuffer(), "Brain.png")]
 
-        return command.followUp({ files }).catch(console.error)
+        return command.followUp({ files })
     },
 })

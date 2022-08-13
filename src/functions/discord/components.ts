@@ -17,7 +17,8 @@ export const createButton = (
     disabled?: boolean,
     emoji?: string,
 ) => {
-    const button = new MessageButton().setLabel(label).setStyle(style)
+    const button = new MessageButton().setStyle(style)
+    if (label) button.setLabel(label)
     style === "LINK" ? button.setURL(customId) : button.setCustomId(customId)
     if (emoji) button.setEmoji(emoji)
     if (disabled) button.setDisabled(disabled)

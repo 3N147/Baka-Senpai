@@ -2,6 +2,7 @@ import GIFEncoder from "gifencoder"
 import { MessageAttachment } from "discord.js"
 import { createCanvas, loadImage } from "canvas"
 import { Command } from "../../structures/Command"
+import { logError } from "../../functions/log/logger"
 
 export default new Command({
     name: "trigger",
@@ -14,13 +15,15 @@ export default new Command({
             required: true,
         },
     ],
-
+    botPermissions: ["EMBED_LINKS", "SEND_MESSAGES", "ATTACH_FILES"],
     async execute(command) {
         const user = command.options.getUser("user") || command.user
 
         const avatar = user.displayAvatarURL({ dynamic: false, format: "png" })
 
-        const base = command.client.images.get("triggered.png") ?? (await loadImage("./assets/images/triggered.png"))
+        const base =
+            command.client.images.get("triggered.png") ??
+            (await loadImage("./assets/images/triggered.png").catch(logError))
 
         const img = await loadImage(avatar)
         const GIF = new GIFEncoder(256, 310)
@@ -57,6 +60,6 @@ export default new Command({
 
         const files = [new MessageAttachment(GIF.out.getData(), "triggered.gif")]
 
-        command.followUp({ files }).catch(console.error)
+        command.followUp({ files }).catch(logError)
     },
 })

@@ -14,7 +14,7 @@ export default new Command({
         const fields: EmbedFieldData[] = guilds
             .map(({ name, id, ownerId, memberCount, me }) => ({
                 name: `${name}:${memberCount}`,
-                value: `ID: ${id}\nOwner: ${ownerId}\n Me:${getDynamicTime(me.joinedAt, "SHORT")}`,
+                value: `ID: ${id}\nOwner: ${ownerId}\n Me:${getDynamicTime(me.joinedAt, "LONG_DATE")}`,
             }))
             .slice(0, 20)
 

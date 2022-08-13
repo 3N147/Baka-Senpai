@@ -16,6 +16,7 @@ export default new Command({
             required: true,
         },
     ],
+    botPermissions: ["EMBED_LINKS", "SEND_MESSAGES"],
     async execute(command) {
         const name = command.options.getString("name")
 
@@ -30,7 +31,7 @@ export default new Command({
             new MessageEmbed()
                 .setColor(color)
                 .setDescription(
-                    `${data.nicknames.length ? `Nicknames: ${data.nicknames.join(", ")}\n` : ""}${data.about}`
+                    `${data.nicknames.length ? `Nicknames: ${data.nicknames.join(", ")}\n` : ""}${data.about}`,
                 )
                 .setTitle(data.name)
                 .setURL(data.url),

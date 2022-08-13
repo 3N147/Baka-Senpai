@@ -18,6 +18,7 @@ export default new Command({
             required: false,
         },
     ],
+    botPermissions: ["EMBED_LINKS", "SEND_MESSAGES"],
     async execute(command) {
         const userId = command.options.getUser("user")?.id || command.user.id
 
@@ -37,7 +38,7 @@ export default new Command({
             createRow(createButton("Deposit All", "dep", "SUCCESS"), createButton("Withdraw All", "with", "SUCCESS")),
         ]
 
-        const message = (await command.followUp({ components, embeds }).catch(console.error)) as Message
+        const message = (await command.followUp({ components, embeds })) as Message
 
         if (!message) return
 
@@ -46,8 +47,8 @@ export default new Command({
         if (!button) return
 
         if (button.customId === "with") {
-            const { amount } = await withdraw(command.user.id, null, command.client, userData)
-            message.edit({ components: [] }).catch(console.error)
+            const { amount } = await withdraw(userData, null)
+            message.edit({ components: [] })
             return interactionReply(
                 button,
                 `All coins have been withdrawn from the bank. Amount: ${writeCoin(amount)}`,
@@ -55,9 +56,9 @@ export default new Command({
             )
         }
 
-        const { amount } = await deposit(command.user.id, null, command.client, userData)
+        const { amount } = await deposit(userData, null)
 
-        message.edit({ components: [] }).catch(console.error)
+        message.edit({ components: [] })
 
         return interactionReply(button, `All coins have been deposited to the bank. Amount: ${writeCoin(amount)}`, true)
     },

@@ -1,16 +1,18 @@
-import { ExtendedClient } from "../../structures/Client"
+import { UserDataType } from "../../schema/user"
 import { getUserData } from "./getData"
 
-export const addCoin = async (userId: string, amount: number, client: ExtendedClient) => {
-    const userData = await getUserData(userId)
+type UserDataResolvable = UserDataType | string
+
+export const addCoin = async (user: UserDataResolvable, amount: number) => {
+    const userData = typeof user === "string" ? await getUserData(user) : user
     userData.coin += amount
-    userData.quickSave(client)
+    userData.quickSave()
     return { userData, amount }
 }
 
-export const setCoin = async (userId: string, amount: number, client: ExtendedClient) => {
-    const userData = await getUserData(userId)
+export const setCoin = async (user: UserDataResolvable, amount: number) => {
+    const userData = typeof user === "string" ? await getUserData(user) : user
     userData.coin = amount
-    userData.quickSave(client)
+    userData.quickSave()
     return { userData, amount }
 }

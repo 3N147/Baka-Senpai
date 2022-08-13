@@ -7,7 +7,7 @@ import { Command } from "../../structures/Command"
 import { ExtendedCommand } from "../../typings/Command"
 
 export default new Command({
-    name: "user-info",
+    name: "userinfo",
     description: "Get information of a user.",
     options: [
         {
@@ -19,6 +19,7 @@ export default new Command({
     ],
 
     ephemeral: true,
+    botPermissions: ["EMBED_LINKS", "SEND_MESSAGES"],
     async execute(command: ExtendedCommand) {
         const member = (command.options.getMember("user") as GuildMember) || command.member
         const { user, roles, permissions } = member
@@ -82,12 +83,12 @@ export default new Command({
             },
             {
                 name: "Created:",
-                value: getDynamicTime(user.createdAt, "SHORT"),
+                value: getDynamicTime(user.createdAt, "LONG_DATE"),
                 inline: true,
             },
             {
                 name: "Joined:",
-                value: getDynamicTime(member.joinedAt, "SHORT"),
+                value: getDynamicTime(member.joinedAt, "LONG_DATE"),
                 inline: true,
             },
 
@@ -118,6 +119,6 @@ export default new Command({
                 .setThumbnail(member.displayAvatarURL({ size: 4096 })),
         ]
 
-        command.followUp({ embeds }).catch(console.error)
+        command.followUp({ embeds })
     },
 })

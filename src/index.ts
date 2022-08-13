@@ -1,9 +1,8 @@
+require("dotenv").config()
 import { registerFont } from "canvas"
+import { getAnimeNews } from "./functions/anime/getAnimeNews"
 import { startServer } from "./server"
 import { ExtendedClient } from "./structures/Client"
-import dotenv from "dotenv"
-
-dotenv.config()
 
 export const client = new ExtendedClient()
 

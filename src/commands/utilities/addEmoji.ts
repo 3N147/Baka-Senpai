@@ -25,6 +25,7 @@ export default new Command({
             ],
         },
     ],
+    botPermissions: ["EMBED_LINKS", "SEND_MESSAGES", "MANAGE_EMOJIS_AND_STICKERS"],
     async execute(command) {
         const { options, guild } = command
         const URL = options.getString("url")

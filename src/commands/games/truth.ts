@@ -10,6 +10,7 @@ import { ExtendedButton } from "../../typings/Components"
 export default new Command({
     name: "truth",
     description: "Get an interesting truth.",
+    botPermissions: ["EMBED_LINKS", "SEND_MESSAGES", "MANAGE_MESSAGES"],
     async execute(command) {
         const str = `**Question:**\n*${getRandomItem(truth)}*`
 
@@ -18,7 +19,7 @@ export default new Command({
             createRow(createButton("Stop", "stop", "DANGER"), createButton("Start New", "truth", "SUCCESS")),
         ]
 
-        const message = (await command.followUp({ embeds, components }).catch(console.error)) as Message
+        const message = (await command.followUp({ embeds, components })) as Message
 
         const messageFilter = (message: Message) => !message.author.bot && !collected(message.author.id)
 
@@ -43,26 +44,24 @@ export default new Command({
         }
 
         buttonCollector.on("collect", async (button: ExtendedButton) => {
-            if (button.customId === "truth") return stop()
-            button.deferUpdate()
             stop()
+            if (button.customId === "truth") return
+            button.deferUpdate()
         })
 
         messageCollector.on("collect", async (msg) => {
             buttonCollector.resetTimer()
 
-            msg.delete().catch(console.error)
+            msg.delete()
             const input = msg.content
 
             embeds[0].addField(`${msg.member.displayName}'s answer:`, input)
 
-            message.edit({ embeds }).catch(console.error)
+            message.edit({ embeds })
 
             if (messageCollector.collected.size === limit) stop()
         })
 
-        buttonCollector.on("end", async () => {
-            message.edit({ components: [] }).catch(console.error)
-        })
+        buttonCollector.on("end", (): any => message.edit({ components: [] }))
     },
 })

@@ -19,6 +19,7 @@ export default new Command({
     ],
     ephemeral: true,
     aliases: ["bulk-delete"],
+    botPermissions: ["EMBED_LINKS", "SEND_MESSAGES", "MANAGE_MESSAGES", "READ_MESSAGE_HISTORY"],
     async execute(command) {
         let channel = command.channel as TextChannel
         let limit = command.options.getInteger("limit")
@@ -47,17 +48,20 @@ export default new Command({
             ),
         ]
 
-        const message = (await command.followUp({ embeds, components }).catch(console.error)) as Message
+        const message = (await command.followUp({ embeds, components })) as Message
         if (!message) return
         const button = await message.awaitMessageComponent({ idle: waitTime })
         if (!button) return
 
         if (button.customId === "no") return timeOut("DENY", { interaction: command })
 
-        await channel.bulkDelete(messages).catch(console.error)
+        const deleted = await channel.bulkDelete(messages)
+
+        embeds = [getEmbed(command).setDescription("Missing permission: `Manage Messages`.")]
+        if (!deleted) return command.editReply({ embeds })
 
         embeds = [getEmbed(command).setDescription("Messages has been deleted.")]
 
-        command.editReply({ embeds, components: [] }).catch(console.error)
+        command.editReply({ embeds, components: [] })
     },
 })

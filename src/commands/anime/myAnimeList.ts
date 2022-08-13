@@ -13,11 +13,12 @@ import { getDynamicTime } from "../../functions/discord/getDynamicTime"
 import { getEmbed } from "../../functions/discord/getEmbed"
 import { followUp } from "../../functions/discord/message"
 import { timeOut } from "../../functions/discord/timeout"
+import { logError } from "../../functions/log/logger"
 import { spacing, titleCase } from "../../functions/string/normalize"
 import { Command } from "../../structures/Command"
 
 export default new Command({
-    name: "myanimelist",
+    name: "search",
     description: "Search anime or manga from My Anime List.",
     options: [
         {
@@ -44,11 +45,13 @@ export default new Command({
             required: true,
         },
     ],
+    aliases: ["myanimelist"],
+    botPermissions: ["EMBED_LINKS", "SEND_MESSAGES"],
     async execute(command) {
         const type = command.options.getString("type")
         const name = command.options.getString("name")
 
-        let axiosData: any = await axios(`https://api.jikan.moe/v4/${type}?q=${name}&sfw`).catch(console.error)
+        let axiosData: any = await axios(`https://api.jikan.moe/v4/${type}?q=${name}&sfw`).catch(logError)
         if (!axiosData?.data) followUp(command, `There is an error in the API.`)
         const data = axiosData.data.data
 
@@ -100,11 +103,11 @@ export default new Command({
             let ended: string
 
             if (media.published) {
-                started = media.published.from ? getDynamicTime(media.published.from, "SHORT") : cross
-                ended = media.published.to ? getDynamicTime(media.published.to, "SHORT") : cross
+                started = media.published.from ? getDynamicTime(media.published.from, "LONG_DATE") : cross
+                ended = media.published.to ? getDynamicTime(media.published.to, "LONG_DATE") : cross
             } else {
-                started = media.aired.from ? getDynamicTime(media.aired.from, "SHORT") : cross
-                ended = media.aired.to ? getDynamicTime(media.aired.to, "SHORT") : cross
+                started = media.aired.from ? getDynamicTime(media.aired.from, "LONG_DATE") : cross
+                ended = media.aired.to ? getDynamicTime(media.aired.to, "LONG_DATE") : cross
             }
 
             const demographics = media.demographics?.length

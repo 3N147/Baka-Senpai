@@ -1,6 +1,7 @@
 import { createCanvas, Image, loadImage } from "canvas"
 import { MessageAttachment } from "discord.js"
 import { fitCover } from "../../functions/canvas/fitCover"
+import { logError } from "../../functions/log/logger"
 import { Command } from "../../structures/Command"
 export default new Command({
     name: "jail",
@@ -13,6 +14,7 @@ export default new Command({
             required: true,
         },
     ],
+    botPermissions: ["EMBED_LINKS", "SEND_MESSAGES", "ATTACH_FILES"],
     async execute(command) {
         const user = command.options.getUser("user")
 
@@ -25,7 +27,9 @@ export default new Command({
             .then((avatar) => ctx.drawImage(avatar, 0, 0, 500, 500))
             .catch(console.error)
 
-        const jail = command.client.images.get("jail-bars.png") ?? (await loadImage("./assets/images/jail-bars.png"))
+        const jail =
+            command.client.images.get("jail-bars.png") ??
+            ((await loadImage("./assets/images/jail-bars.png").catch(logError)) as Image)
 
         if (jail) await fitCover(ctx, canvas, jail)
 

@@ -6,6 +6,7 @@ import { getEmbed } from "../../functions/discord/getEmbed"
 import { followUp } from "../../functions/discord/message"
 import { randomizeIndex } from "../../functions/random/random"
 import { writeCoin } from "../../functions/string/writeCoins"
+import { addCoin } from "../../functions/userDB/coin"
 import { getUserData } from "../../functions/userDB/getData"
 import { Command } from "../../structures/Command"
 
@@ -26,11 +27,13 @@ export default new Command({
             required: true,
         },
     ],
+    botPermissions: ["EMBED_LINKS", "SEND_MESSAGES"],
     async execute(command) {
-        const { options, client, user } = command
+        const { options, user } = command
 
         const opponent = options.getUser("opponent")
         const bet = options.getInteger("bet")
+        const winAmount = Math.round(bet - bet * economy.tax)
 
         if (user.id === opponent.id) return followUp(command, `You can't play with yourself.`)
 
@@ -57,14 +60,13 @@ export default new Command({
             .awaitMessageComponent({ time: waitTime, filter })
             .catch(console.error)) as ButtonInteraction
 
-        if (!confirmation || confirmation.customId === "no")
-            return message.edit({ components: [] }).catch(console.error)
+        if (!confirmation || confirmation.customId === "no") return message.edit({ components: [] })
 
         confirmation.deferUpdate()
 
         embeds = [getEmbed(command).setDescription("Click the green button as soon as it appears.")]
 
-        await message.edit({ embeds, components: [] }).catch(console.error)
+        await message.edit({ embeds, components: [] })
 
         const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
@@ -78,7 +80,7 @@ export default new Command({
 
         await sleep(5000)
 
-        await message.edit({ components }).catch(console.error)
+        await message.edit({ components })
 
         filter = (button: ButtonInteraction) => collectorFilter(button, opponent, user)
 
@@ -95,10 +97,8 @@ export default new Command({
 
             const embeds = [getEmbed(command).setDescription(description)]
 
-            userData.coin -= bet
-            userData.quickSave(client)
-            opponentData.coin -= bet
-            opponentData.quickSave(client)
+            addCoin(userData, -bet)
+            addCoin(opponentData, -bet)
 
             return message.edit({ embeds, components: [] })
         }
@@ -113,35 +113,23 @@ export default new Command({
 
             const embeds = [getEmbed(command).setDescription(description)]
 
-            if (userClick) {
-                userData.coin -= bet
-                userData.quickSave(client)
-            } else {
-                opponentData.coin -= bet
-                opponentData.quickSave(client)
-            }
-            return message.edit({ embeds, components: [] }).catch(console.error)
+            userClick ? addCoin(userData, -bet) : addCoin(opponentData, -bet)
+
+            return message.edit({ embeds, components: [] })
         }
 
-        const description = [
-            `*${button.user} is the winner.*`,
-            `${button.user} won ${writeCoin(bet + (bet - bet * economy.tax))}`,
-        ].join("\n")
+        const description = [`*${button.user} is the winner.*`, `${button.user} won ${writeCoin(winAmount)}`].join("\n")
 
         embeds = [getEmbed(command).setDescription(description)]
 
         if (userClick) {
-            userData.coin += bet - bet * economy.tax
-            userData.quickSave(client)
-            opponentData.coin -= bet
-            opponentData.quickSave(client)
+            addCoin(userData, winAmount)
+            addCoin(opponentData, -bet)
         } else {
-            userData.coin -= bet
-            userData.quickSave(client)
-            opponentData.coin += bet - bet * economy.tax
-            opponentData.quickSave(client)
+            addCoin(userData, -bet)
+            addCoin(opponentData, winAmount)
         }
 
-        return message.edit({ embeds, components: [] }).catch(console.error)
+        return message.edit({ embeds, components: [] })
     },
 })

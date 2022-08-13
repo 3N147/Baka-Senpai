@@ -25,7 +25,7 @@ export default new Command({
             required: true,
         },
     ],
-
+    botPermissions: ["EMBED_LINKS", "SEND_MESSAGES"],
     async execute(command) {
         const target = command.options.getUser("user").username.split(/ +/g).join(" ")
         const type = command.options.getString("action")
@@ -46,6 +46,6 @@ export default new Command({
         if (type === "bully") title = `Bullying is bad tho..`
         if (type === "wave") title = `Hi ${target}.`
         let embeds = [new MessageEmbed().setColor(color).setTitle(title).setImage(image.url)]
-        command.followUp({ embeds }).catch(console.error)
+        command.followUp({ embeds })
     },
 })

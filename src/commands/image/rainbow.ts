@@ -1,6 +1,7 @@
-import { createCanvas, loadImage } from "canvas"
+import { createCanvas, Image, loadImage } from "canvas"
 import { MessageAttachment } from "discord.js"
 import { fitCover } from "../../functions/canvas/fitCover"
+import { logError } from "../../functions/log/logger"
 import { Command } from "../../structures/Command"
 
 export default new Command({
@@ -14,6 +15,7 @@ export default new Command({
             required: true,
         },
     ],
+    botPermissions: ["EMBED_LINKS", "SEND_MESSAGES", "ATTACH_FILES"],
     async execute(command) {
         let user = command.options.getUser("user") || command.user
 
@@ -26,7 +28,9 @@ export default new Command({
             .then((avatar) => ctx.drawImage(avatar, 0, 0, 500, 500))
             .catch(console.error)
 
-        let rainbowImage = command.client.images.get("rainbow.png") ?? (await loadImage("./assets/images/rainbow.png"))
+        let rainbowImage =
+            command.client.images.get("rainbow.png") ??
+            ((await loadImage("./assets/images/rainbow.png").catch(logError)) as Image)
 
         ctx.globalAlpha = 0.4
 
@@ -34,6 +38,6 @@ export default new Command({
 
         const files = [new MessageAttachment(canvas.toBuffer(), "rainbow.png")]
 
-        command.followUp({ files }).catch(console.error)
+        command.followUp({ files }).catch(logError)
     },
 })

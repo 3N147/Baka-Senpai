@@ -5,6 +5,7 @@ import { Command } from "../../structures/Command"
 export default new Command({
     name: "help",
     description: "Get a list of all commands.",
+    botPermissions: ["EMBED_LINKS", "SEND_MESSAGES"],
     async execute(command) {
         const commands = command.client.commands.filter((cmd) => !cmd.devOnly)
 
@@ -19,6 +20,6 @@ export default new Command({
         })
 
         const embeds = [getEmbed(command).setTitle("Here is the list of the commands.").setFields(fields)]
-        command.followUp({ embeds }).catch(console.error)
+        command.followUp({ embeds })
     },
 })

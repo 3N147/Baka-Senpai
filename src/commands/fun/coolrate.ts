@@ -14,6 +14,7 @@ export default new Command({
             required: false,
         },
     ],
+    botPermissions: ["EMBED_LINKS", "SEND_MESSAGES"],
     async execute(command) {
         const user = command.options.getUser("user") || command.user
 

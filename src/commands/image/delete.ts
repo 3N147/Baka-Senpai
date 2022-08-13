@@ -1,5 +1,6 @@
 import { createCanvas, Image, loadImage, registerFont } from "canvas"
 import { MessageAttachment, MessageEmbed } from "discord.js"
+import { logError } from "../../functions/log/logger"
 import { Command } from "../../structures/Command"
 
 export default new Command({
@@ -13,13 +14,16 @@ export default new Command({
             required: true,
         },
     ],
+    botPermissions: ["EMBED_LINKS", "SEND_MESSAGES", "ATTACH_FILES"],
     async execute(command) {
         const user = command.options.getUser("user")
 
         const canvas = createCanvas(1150, 472)
         const ctx = canvas.getContext("2d")
 
-        const image = command.client.images.get("delete.png") ?? (await loadImage("assets/images/delete.png"))
+        const image =
+            command.client.images.get("delete.png") ??
+            ((await loadImage("assets/images/delete.png").catch(logError)) as Image)
 
         if (image) ctx.drawImage(image, 0, 0, canvas.width, canvas.height)
 

@@ -27,7 +27,7 @@ export default new Command({
         if (!user) return followUp(command, "Failed to fetch user!")
 
         const description = `
-        Create: ${getDynamicTime(user.createdAt, "SHORT")}
+        Create: ${getDynamicTime(user.createdAt, "LONG_DATE")}
         Badges: ${titleCase(user.flags.toArray().join(", "))}
         `
         const imgURLOptions: ImageURLOptions = { size: 4096 }

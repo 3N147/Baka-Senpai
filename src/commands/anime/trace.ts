@@ -14,6 +14,7 @@ export default new Command({
         },
     ],
     aliases: ["find-anime"],
+    botPermissions: ["EMBED_LINKS", "SEND_MESSAGES"],
     async execute(cmd) {
         const url = cmd.options.getString("url")
         const axiosData = await axios(`https://api.trace.moe/search?anilistInfo&url=${encodeURIComponent(url)}`)

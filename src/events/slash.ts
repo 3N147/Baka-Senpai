@@ -1,7 +1,7 @@
-import { Collection } from "discord.js"
+import { Collection, Message } from "discord.js"
 import { client } from ".."
 import { developers } from "../config"
-import { followUp, interactionReply } from "../functions/discord/message"
+import { logError } from "../functions/log/logger"
 import { titleCase } from "../functions/string/normalize"
 import { Event } from "../structures/Event"
 import { ExtendedCommand } from "../typings/Command"
@@ -9,22 +9,33 @@ import { ExtendedCommand } from "../typings/Command"
 export default new Event("interactionCreate", async (interaction: ExtendedCommand) => {
     if (!interaction.isCommand()) return
 
-    const command = client.commands.get(interaction.commandName)
-    if (!command) return interactionReply(interaction, "This command is missing.")
+    interaction.smartFollowUp = async function (content, seconds) {
+        const message = (await this.followUp(content).catch(logError)) as Message
+        if (!message && !seconds) return message
+        setTimeout(() => message.delete().catch(logError), seconds * 1000)
+        return message
+    }
+    interaction.smartReply = async function (content, ephemeral, seconds) {
+        const message = (await this.reply({ content, ephemeral: !!ephemeral, fetchReply: true }).catch(
+            logError,
+        )) as Message
+        if (!message && !seconds) return message
+        setTimeout(() => message.delete().catch(logError), seconds * 1000)
+        return message
+    }
 
-    command.ephemeral ? await interaction.deferReply({ ephemeral: true }) : await interaction.deferReply()
+    const command = client.commands.get(interaction.commandName)
+    if (!command) return interaction.smartReply("This command is missing.", true)
 
     if (command.devOnly && !developers.includes(interaction.user.id))
-        return followUp(interaction, `Only bot developers can use this command.`)
+        return interaction.smartReply(`Only bot developers can use this command.`, true)
 
     if (!developers.includes(interaction.user.id)) {
         const { coolDown } = client
 
-        if (!coolDown.has(command.name)) {
-            coolDown.set(command.name, new Collection())
-        }
+        if (!coolDown.has(command.name)) coolDown.set(command.name, new Collection())
 
-        const now = Date.now()
+        const now = new Date().valueOf()
         const timestamps = coolDown.get(command.name)
         const coolDownAmount = (command.coolDown || 3) * 1000
 
@@ -32,11 +43,9 @@ export default new Event("interactionCreate", async (interaction: ExtendedComman
             const expirationTime = timestamps.get(interaction.user.id) + coolDownAmount
 
             if (now < expirationTime) {
-                const timeLeft = (expirationTime - now) / 1000
-                return followUp(
-                    interaction,
-                    `Wait **${timeLeft.toFixed(1)}**s before reusing the \`${command.name}\` command.`
-                )
+                const timeLeft = Math.round((expirationTime - now) / 1000)
+                const content = `Slow down buddy! You can use \`${command.name}\` command in **${timeLeft}s**.`
+                return interaction.smartReply(content, true)
             }
         }
 
@@ -45,16 +54,26 @@ export default new Event("interactionCreate", async (interaction: ExtendedComman
 
         if (command.permissions?.length) {
             const permissions = command.permissions?.filter(
-                (permission) => !interaction.member.permissions.has(permission)
+                (permission) => !interaction.member.permissions.has(permission),
             )
-            const content = `You need \`${titleCase(permissions.join(", "))}\` permission(s) to use this command`
-            if (permissions.length) return followUp(interaction, content)
+            const content = `You need \`${titleCase(permissions.join(", "))}\` permission(s) to use this command.`
+            if (permissions.length) return interaction.smartReply(content, true)
+        }
+
+        if (command.botPermissions?.length) {
+            const permissions = command.botPermissions?.filter(
+                (permission) => !interaction.guild.me.permissions.has(permission),
+            )
+            const content = `I need \`${titleCase(permissions.join(", "))}\` permission(s) to use this command.`
+            if (permissions.length) return interaction.smartReply(content, true)
         }
     }
+
+    command.ephemeral ? await interaction.deferReply({ ephemeral: true }) : await interaction.deferReply()
 
     try {
         return command.execute(interaction)
     } catch (error) {
-        console.error(error)
+        logError(error)
     }
 })

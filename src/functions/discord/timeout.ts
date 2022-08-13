@@ -6,6 +6,7 @@ import {
     MessageActionRow,
     SelectMenuInteraction,
 } from "discord.js"
+import { logError } from "../log/logger"
 import { createButton } from "./components"
 
 type option = {
@@ -46,6 +47,6 @@ export const timeOut = async (
             break
     }
 
-    if (message) return message.edit({ components }).catch(console.error)
-    if (interaction) return interaction.editReply({ components }).catch(console.error)
+    if (message) return message.edit({ components }).catch(logError)
+    if (interaction) return interaction.editReply({ components }).catch(logError)
 }

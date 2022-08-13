@@ -2,6 +2,7 @@ import { Command } from "../../structures/Command"
 import { Collection, Message, MessageActionRow, MessageButton, MessageButtonStyle, MessageEmbed } from "discord.js"
 import { followUp, interactionReply } from "../../functions/discord/message"
 import { color } from "../../config"
+import { logError } from "../../functions/log/logger"
 
 export default new Command({
     name: "tic-tac-toe",
@@ -15,6 +16,7 @@ export default new Command({
         },
     ],
     aliases: ["ttt"],
+    botPermissions: ["EMBED_LINKS", "SEND_MESSAGES"],
     async execute(command) {
         const challenger = command.user
         const opponent = command.options.getUser("opponent")
@@ -30,19 +32,19 @@ export default new Command({
             new MessageActionRow().addComponents(
                 button(defaultEmoji, "SECONDARY", "1"),
                 button(defaultEmoji, "SECONDARY", "2"),
-                button(defaultEmoji, "SECONDARY", "3")
+                button(defaultEmoji, "SECONDARY", "3"),
             ),
 
             new MessageActionRow().addComponents(
                 button(defaultEmoji, "SECONDARY", "4"),
                 button(defaultEmoji, "SECONDARY", "5"),
-                button(defaultEmoji, "SECONDARY", "6")
+                button(defaultEmoji, "SECONDARY", "6"),
             ),
 
             new MessageActionRow().addComponents(
                 button(defaultEmoji, "SECONDARY", "7"),
                 button(defaultEmoji, "SECONDARY", "8"),
-                button(defaultEmoji, "SECONDARY", "9")
+                button(defaultEmoji, "SECONDARY", "9"),
             ),
         ]
 
@@ -85,9 +87,10 @@ export default new Command({
                 [1, 5, 9],
                 [3, 5, 7],
             ]
-            solution.forEach((win) => {
-                if (currentUserButtons.filter((x) => win.includes(x)).length === 3) winner = true
-            })
+
+            solution.forEach((win) =>
+                currentUserButtons.filter((x) => win.includes(x)).length === 3 ? (winner = true) : null,
+            )
 
             const row = Math.floor((parseInt(interaction.customId) - 1) / 3)
 
@@ -115,7 +118,7 @@ export default new Command({
                         .setDescription(`<@${currentPlayer}> is the winner. 🎉`),
                 ]
 
-                return message.edit({ components, embeds }).catch(console.error) as any
+                return message.edit({ components, embeds }).catch(logError) as any
             }
 
             currentPlayer = currentPlayer === opponent.id ? challenger.id : opponent.id
@@ -128,7 +131,7 @@ export default new Command({
                 embeds = [new MessageEmbed().setColor(color).setTitle(title).setDescription(`Tie`)]
             }
 
-            message.edit({ components, embeds }).catch(console.error)
+            message.edit({ components, embeds }).catch(logError)
         })
 
         collector.on("end", async () => {
@@ -137,7 +140,7 @@ export default new Command({
                 components.forEach((row) => row.components.forEach((box) => (box.disabled = true)))
 
                 embeds = [new MessageEmbed().setColor(color).setTitle(title).setDescription(`Game time over.`)]
-                message.edit({ components, embeds }).catch(console.error)
+                message.edit({ components, embeds }).catch(logError)
             }, 1000)
         })
     },

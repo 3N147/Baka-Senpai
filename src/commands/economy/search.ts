@@ -6,10 +6,12 @@ import { createButton } from "../../functions/discord/components"
 import { getEmbed } from "../../functions/discord/getEmbed"
 import { timeOut } from "../../functions/discord/timeout"
 import { Command } from "../../structures/Command"
+import { logError } from "../../functions/log/logger"
 
 export default new Command({
     name: "search-coin",
     description: "Search Coin somewhere to get some coin.",
+    botPermissions: ["EMBED_LINKS", "SEND_MESSAGES"],
     async execute(command) {
         const { user } = command
 
@@ -46,7 +48,7 @@ export default new Command({
 
         const filter = (interaction: MessageComponentInteraction) => collectorFilter(interaction, command.user)
 
-        const interaction = await message.awaitMessageComponent({ time: waitTime, filter })
+        const interaction = await message.awaitMessageComponent({ time: waitTime, filter }).catch(logError)
 
         if (!interaction) return timeOut("TIMEOUT", { message })
 
@@ -54,13 +56,13 @@ export default new Command({
 
         if (Math.floor(Math.random() * 10) < 3) {
             embeds = [getEmbed(command).setDescription(`Got nothing by searching in ${place}.`)]
-            return message.edit({ embeds, components: [] }).catch(console.error)
+            return message.edit({ embeds, components: [] })
         }
 
-        const { amount } = await addCoin(user.id, Math.round(Math.random() * 500), command.client)
+        const { amount } = await addCoin(user.id, Math.round(Math.random() * 500))
 
         embeds = [getEmbed(command).setDescription(`You found **${amount}** ${coin} in the ${place}.`)]
 
-        return message.edit({ embeds, components: [] }).catch(console.error)
+        return message.edit({ embeds, components: [] })
     },
 })

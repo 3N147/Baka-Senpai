@@ -1,4 +1,4 @@
-export const numberFormatter = (num: number) => {
+export const numberWithSiSuffix = (num: number) => {
     if (num < 1) return num
     const SI = [
         { value: 1e18, symbol: "E" },
@@ -18,4 +18,17 @@ export const numberFormatter = (num: number) => {
     }
 
     return (num / SI[i].value).toFixed(2).replace(regex, "$1") + SI[i].symbol
+}
+
+export const numberWithComma = (number: number) => {
+    number -= number % 1
+    let i = 0
+
+    return number
+        .toString()
+        .split("")
+        .reduceRight((a, c) => {
+            i++
+            return i % 3 === 0 ? `${c},${a}` : c + a
+        })
 }

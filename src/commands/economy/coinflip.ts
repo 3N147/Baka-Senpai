@@ -1,11 +1,13 @@
-import { ButtonInteraction, Message } from "discord.js"
+import { ButtonInteraction, Message, MessageAttachment } from "discord.js"
 import { economy, emojis, waitTime } from "../../config"
 import { collectorFilter } from "../../functions/discord/collectorFilter"
 import { createButton, createRow } from "../../functions/discord/components"
 import { followUp } from "../../functions/discord/message"
 import { timeOut } from "../../functions/discord/timeout"
 import { toggleAnswerComponents } from "../../functions/discord/toggleComponents"
+import { logError } from "../../functions/log/logger"
 import { writeCoin } from "../../functions/string/writeCoins"
+import { addCoin } from "../../functions/userDB/coin"
 import { getUserData } from "../../functions/userDB/getData"
 import { Command } from "../../structures/Command"
 
@@ -20,14 +22,15 @@ export default new Command({
             required: true,
         },
     ],
+    aliases: ["toss"],
+    botPermissions: ["EMBED_LINKS", "SEND_MESSAGES", "ATTACH_FILES"],
     async execute(command) {
         const { options, user, client } = command
 
         const bet = options.getInteger("bet")
+        const winAmount = Math.round(bet - bet * economy.tax)
 
         const userData = await getUserData(user.id)
-
-        userData.coin -= bet
 
         if (userData.coin < bet) return followUp(command, `You don't have enough coins in your wallet!`)
 
@@ -39,26 +42,26 @@ export default new Command({
             createRow(createButton("Gimme my coins back!", "return", "DANGER", false, "💰")),
         ]
 
-        let content = `<a:lol:${emojis.coinFlip}>`
+        const files = [new MessageAttachment("./assets/images/coinflip.gif", "baka-coinflip.gif")]
 
-        const message = (await command.followUp({ content, components }).catch(console.error)) as Message
+        const message = (await command.followUp({ files, components })) as Message
 
         if (!message) return
 
         const filter = (inter: ButtonInteraction) => collectorFilter(inter, user)
 
-        const button = await message.awaitMessageComponent({ time: waitTime, filter })
+        const button = (await message
+            .awaitMessageComponent({ time: waitTime, filter })
+            .catch(logError)) as ButtonInteraction
 
         if (!button) {
-            userData.quickSave(client)
+            addCoin(userData, bet)
             return timeOut("NOREPLY", { message })
         }
 
         button.deferUpdate()
 
         if (button.customId === "return") {
-            userData.coin += bet
-            userData.quickSave(client)
             return timeOut("DISABLE", { message }, components)
         }
 
@@ -66,23 +69,22 @@ export default new Command({
 
         const choice = button.customId
 
-        const emoji = `<:heheboi:${choice === "head" ? emojis.head : emojis.tail}>`
+        const emoji = choice === "head" ? emojis.head : emojis.tail
 
         if (side === choice) {
-            content = `You choose ${emoji} and you won ${writeCoin(bet * 2 - bet * economy.tax)}. 🎉`
+            const content = `You choose ${emoji} and you won ${writeCoin(winAmount)}. 🎉`
             components = [toggleAnswerComponents(components, choice, side)[0]]
 
-            userData.coin += bet * 2 - bet * economy.tax
-            userData.quickSave(client)
+            addCoin(userData, winAmount)
 
-            return message.edit({ components, content }).catch(console.error)
+            return message.edit({ components, content, files: [] })
         }
 
-        content = `You choose ${emoji} and you lost ${writeCoin(bet)}.`
+        const content = `You choose ${emoji} and you lost ${writeCoin(bet)}.`
         components = [toggleAnswerComponents(components, choice, side)[0]]
 
-        userData.quickSave(client)
+        addCoin(userData, -bet)
 
-        return message.edit({ components, content }).catch(console.error)
+        return message.edit({ components, content, files: [] })
     },
 })
