@@ -85,7 +85,7 @@ export class ExtendedClient extends Client {
             })
 
             const webhook = new WebhookClient({ url: data.webhookURL })
-            webhook.send({ embeds }).catch(logError)
+            webhook.send({ embeds, content: data.content }).catch(logError)
         })
         await AnimeNews.updateMany({}, { lastPost: new Date() })
     }

@@ -20,6 +20,11 @@ export default new Command({
                 },
                 {
                     type: "STRING",
+                    name: "content",
+                    description: "Content of the news post. You can mention a role if you want.",
+                },
+                {
+                    type: "STRING",
                     name: "name",
                     description: "Name of the bot that will post news.",
                 },
@@ -56,6 +61,7 @@ export default new Command({
 
         const channel = options.getChannel("channel") as TextChannel
         const name = options.getString("name") ?? client.user.username
+        const content = options.getString("content") ?? null
         const avatar = options.getAttachment("avatar")?.url ?? client.user.displayAvatarURL({ size: 4096 })
         const channelId = channel.id
         const exists = await AnimeNews.findOne({ guildId })
@@ -64,7 +70,7 @@ export default new Command({
 
         const webhook = await channel.createWebhook(name, { avatar })
 
-        AnimeNews.create({ guildId, channelId, webhookURL: webhook.url })
+        AnimeNews.create({ guildId, channelId, webhookURL: webhook.url, content })
 
         command.followUp(`I will send new anime news in ${channel}.`)
     },

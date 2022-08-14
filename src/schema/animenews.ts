@@ -4,6 +4,7 @@ const STRING = { type: String, required: true }
 
 export interface AnimeNewsDataType extends mongoose.Document {
     quickSave: () => any
+    content: string
     guildId: string
     channelId: string
     webhookURL: string
@@ -11,6 +12,7 @@ export interface AnimeNewsDataType extends mongoose.Document {
 }
 
 const schema = new mongoose.Schema({
+    content: STRING,
     guildId: STRING,
     channelId: STRING,
     webhookURL: STRING,
